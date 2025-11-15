@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Base de datos PostgreSQL (opcional, si quieres cambiar de SQLite)
+  # db:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: wfl_prod
+  #     POSTGRES_USER: wfl_user
+  #     POSTGRES_PASSWORD: tu_password_seguro
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   restart: unless-stopped
+
+  backend:
+    build:
+      context: ./wfl_backend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:./prisma/prod.db
+      - JWT_SECRET=tu_clave_jwt_muy_segura_aqui
+      - PORT=4000
+    volumes:
+      - ./wfl_backend/prisma:/app/prisma
+      - ./wfl_backend/uploads:/app/uploads
+    restart: unless-stopped
+    # depends_on:
+    #   - db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/auth/users"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:4000
+      - NODE_ENV=production
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# volumes:
+#   postgres_data:

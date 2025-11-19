@@ -21,7 +21,14 @@ export default function Dashboard() {
    const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Estados para formularios
-  const [serieForm, setSerieForm] = useState({ nombre: '', descripcion: '', estado: '' });
+  const [serieForm, setSerieForm] = useState({
+    nombre: '',
+    descripcion: '',
+    estado: '',
+    temporada: '',
+    pais: '',
+    fechaLanzamiento: ''
+  });
   const [equipoForm, setEquipoForm] = useState({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
   const [jugadorForm, setJugadorForm] = useState({
     nombre: '',
@@ -45,7 +52,14 @@ export default function Dashboard() {
   const [series, setSeries] = useState<any[]>([]);
   const [jugadores, setJugadores] = useState<any[]>([]);
   const [editingSerie, setEditingSerie] = useState<any>(null);
-  const [editSerieForm, setEditSerieForm] = useState({ nombre: '', descripcion: '', estado: '' });
+  const [editSerieForm, setEditSerieForm] = useState({
+    nombre: '',
+    descripcion: '',
+    estado: '',
+    temporada: '',
+    pais: '',
+    fechaLanzamiento: ''
+  });
   const [editingEquipo, setEditingEquipo] = useState<any>(null);
   const [editEquipoForm, setEditEquipoForm] = useState({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
   const [editingJugador, setEditingJugador] = useState<any>(null);
@@ -64,8 +78,14 @@ export default function Dashboard() {
     equipoId: ''
   });
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
+  const [editSerieImageFile, setEditSerieImageFile] = useState<File | null>(null);
+  const [editSerieImagePreview, setEditSerieImagePreview] = useState<string | null>(null);
+  const [editEquipoImageFile, setEditEquipoImageFile] = useState<File | null>(null);
+  const [editEquipoImagePreview, setEditEquipoImagePreview] = useState<string | null>(null);
+  const [serieImageFile, setSerieImageFile] = useState<File | null>(null);
+  const [serieImagePreview, setSerieImagePreview] = useState<string | null>(null);
   const [usuarios, setUsuarios] = useState<any[]>([]);
-  const [usuarioForm, setUsuarioForm] = useState({ email: '', name: '', role: '' });
+  const [usuarioForm, setUsuarioForm] = useState({ email: '', name: '', password: '', role: '' });
   const [editingUsuario, setEditingUsuario] = useState<any>(null);
   const [editUsuarioForm, setEditUsuarioForm] = useState({ email: '', name: '', role: '' });
 
@@ -146,7 +166,7 @@ export default function Dashboard() {
 
   const fetchUsuarios = async (token: string) => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/usuarios`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsuarios(response.data);
@@ -187,16 +207,51 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem('wfl_token');
-      const createData = {
-        ...serieForm
-      };
 
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/series`, createData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (serieImageFile) {
+        // Si hay imagen, usar FormData
+        const formData = new FormData();
 
-      setSerieForm({ nombre: '', descripcion: '', estado: '' });
+        // Agregar campos de texto
+        Object.entries(serieForm).forEach(([key, value]) => {
+          if (value !== null && value !== '') {
+            if (key === 'fechaLanzamiento' && typeof value === 'string') {
+              formData.append(key, value ? new Date(value).toISOString() : '');
+            } else if (typeof value === 'string') {
+              formData.append(key, value);
+            }
+          }
+        });
+
+        // Agregar imagen
+        formData.append('imagen', serieImageFile);
+
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/series`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        // Sin imagen, enviar JSON normal
+        const createData = {
+          ...serieForm
+        };
+
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/series`, createData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
+
+      setSerieForm({ nombre: '', descripcion: '', estado: '', temporada: '', pais: '', fechaLanzamiento: '' });
+      setSerieImageFile(null);
+      setSerieImagePreview(null);
       setSuccess('Serie creada exitosamente');
+
+      // Recargar series
+      if (token) {
+        fetchSeries(token);
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al crear serie');
     } finally {
@@ -212,16 +267,46 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem('wfl_token');
-      const createData = {
-        ...equipoForm,
-        serieId: equipoForm.serieId ? parseInt(equipoForm.serieId) : undefined
-      };
 
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos`, createData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (serieImageFile) {
+        // Si hay imagen, usar FormData
+        const formData = new FormData();
+
+        // Agregar campos de texto
+        Object.entries(equipoForm).forEach(([key, value]) => {
+          if (value !== null && value !== '') {
+            if (key === 'serieId' && value) {
+              formData.append(key, parseInt(value).toString());
+            } else if (typeof value === 'string') {
+              formData.append(key, value);
+            }
+          }
+        });
+
+        // Agregar imagen
+        formData.append('imagen', serieImageFile);
+
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        // Sin imagen, enviar JSON normal
+        const createData = {
+          ...equipoForm,
+          serieId: equipoForm.serieId && equipoForm.serieId !== '' ? parseInt(equipoForm.serieId) : undefined
+        };
+
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos`, createData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
 
       setEquipoForm({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
+      setSerieImageFile(null);
+      setSerieImagePreview(null);
       setSuccess('Equipo creado exitosamente');
 
       // Recargar la lista de equipos para que aparezcan en el selector de jugadores
@@ -254,6 +339,42 @@ export default function Dashboard() {
       const reader = new FileReader();
       reader.onload = (e) => {
         setEditImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditSerieImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditSerieImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditSerieImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditEquipoImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setEditEquipoImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditEquipoImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSerieImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSerieImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSerieImagePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
@@ -399,8 +520,13 @@ export default function Dashboard() {
       setEditSerieForm({
         nombre: serieData.nombre,
         descripcion: serieData.descripcion || '',
-        estado: serieData.estado || ''
+        estado: serieData.estado || '',
+        temporada: serieData.temporada || '',
+        pais: serieData.pais || '',
+        fechaLanzamiento: serieData.fechaLanzamiento ? new Date(serieData.fechaLanzamiento).toISOString().split('T')[0] : ''
       });
+      setEditSerieImageFile(null);
+      setEditSerieImagePreview(serieData.imagenUrl || null);
       setActiveTab('editar-serie');
     } catch (err: any) {
       console.error('Error al cargar serie:', err);
@@ -418,22 +544,56 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem('wfl_token');
-      const updateData: any = {
-        nombre: editSerieForm.nombre,
-        descripcion: editSerieForm.descripcion || null,
-        estado: editSerieForm.estado || null
-      };
 
-      console.log('Datos a enviar:', updateData); // Para debugging
+      if (editSerieImageFile) {
+        // Si hay imagen, usar FormData
+        const formData = new FormData();
 
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/series/${editingSerie.id}`, updateData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        // Agregar campos de texto
+        Object.entries(editSerieForm).forEach(([key, value]) => {
+          if (value !== null && value !== '') {
+            if (key === 'fechaLanzamiento' && typeof value === 'string') {
+              formData.append(key, value ? new Date(value).toISOString() : '');
+            } else if (typeof value === 'string') {
+              formData.append(key, value);
+            }
+          }
+        });
+
+        // Agregar imagen
+        formData.append('imagen', editSerieImageFile);
+
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/series/${editingSerie.id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        // Sin imagen, enviar JSON normal
+        const updateData = {
+          ...editSerieForm,
+          fechaLanzamiento: editSerieForm.fechaLanzamiento ? new Date(editSerieForm.fechaLanzamiento).toISOString() : undefined
+        };
+
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/series/${editingSerie.id}`, updateData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
 
       setSuccess('Serie actualizada exitosamente');
       setActiveTab('modificar-series');
       setEditingSerie(null);
-      setEditSerieForm({ nombre: '', descripcion: '', estado: '' });
+      setEditSerieForm({
+        nombre: '',
+        descripcion: '',
+        estado: '',
+        temporada: '',
+        pais: '',
+        fechaLanzamiento: ''
+      });
+      setEditSerieImageFile(null);
+      setEditSerieImagePreview(null);
 
       // Recargar series
       if (token) {
@@ -484,6 +644,8 @@ export default function Dashboard() {
       ciudad: equipo.ciudad || '',
       serieId: equipo.serieId?.toString() || ''
     });
+    setEditEquipoImageFile(null);
+    setEditEquipoImagePreview(equipo.imagenUrl || null);
     setActiveTab('editar-equipo');
   };
 
@@ -495,24 +657,54 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem('wfl_token');
-      const updateData: any = {
-        nombre: editEquipoForm.nombre,
-        descripcion: editEquipoForm.descripcion || null,
-        estadio: editEquipoForm.estadio || null,
-        ciudad: editEquipoForm.ciudad || null,
-        serieId: editEquipoForm.serieId ? parseInt(editEquipoForm.serieId) : null
-      };
 
-      console.log('Datos a enviar:', updateData); // Para debugging
+      if (editEquipoImageFile) {
+        // Si hay imagen, usar FormData
+        const formData = new FormData();
 
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos/${editingEquipo.id}`, updateData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        // Agregar campos de texto
+        Object.entries(editEquipoForm).forEach(([key, value]) => {
+          if (value !== null && value !== '') {
+            if (key === 'serieId' && value) {
+              formData.append(key, parseInt(value).toString());
+            } else if (typeof value === 'string') {
+              formData.append(key, value);
+            }
+          }
+        });
+
+        // Agregar imagen
+        formData.append('imagen', editEquipoImageFile);
+
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos/${editingEquipo.id}`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+      } else {
+        // Sin imagen, enviar JSON normal
+        const updateData: any = {
+          nombre: editEquipoForm.nombre,
+          descripcion: editEquipoForm.descripcion || null,
+          estadio: editEquipoForm.estadio || null,
+          ciudad: editEquipoForm.ciudad || null,
+          serieId: editEquipoForm.serieId && editEquipoForm.serieId !== '' ? parseInt(editEquipoForm.serieId) : null
+        };
+
+        console.log('Datos a enviar:', updateData); // Para debugging
+
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos/${editingEquipo.id}`, updateData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
 
       setSuccess('Equipo actualizado exitosamente');
       setActiveTab('modificar-equipos');
       setEditingEquipo(null);
       setEditEquipoForm({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
+      setEditEquipoImageFile(null);
+      setEditEquipoImagePreview(null);
 
       // Recargar equipos
       if (token) {
@@ -711,12 +903,17 @@ export default function Dashboard() {
         ...usuarioForm
       };
 
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/usuarios`, createData, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/users`, createData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setUsuarioForm({ email: '', name: '', role: '' });
+      setUsuarioForm({ email: '', name: '', password: '', role: '' });
       setSuccess('Usuario creado exitosamente');
+
+      // Recargar usuarios
+      if (token) {
+        fetchUsuarios(token);
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Error al crear usuario');
     } finally {
@@ -748,7 +945,7 @@ export default function Dashboard() {
         role: editUsuarioForm.role
       };
 
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/usuarios/${editingUsuario.id}`, updateData, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/users/${editingUsuario.id}`, updateData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -780,7 +977,7 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem('wfl_token');
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/usuarios/${usuarioId}`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/users/${usuarioId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -1215,18 +1412,43 @@ export default function Dashboard() {
                      {series.slice((currentPageSeries - 1) * itemsPerPage, currentPageSeries * itemsPerPage).map((serie) => (
                        <div key={serie.id} className="border border-gray-200 rounded-lg p-4">
                          <div className="flex justify-between items-start">
-                           <div>
-                             <h3 className="font-semibold text-lg" style={{ color: '#26558D' }}>
-                               {serie.nombre}
-                             </h3>
-                             <p className="text-sm text-gray-600 mt-1">
-                               {serie.descripcion || 'Sin descripción'}
-                             </p>
-                             <p className="text-xs text-gray-500 mt-2">
-                               Creada: {new Date(serie.createAt).toLocaleDateString()}
-                             </p>
+                           <div className="flex items-start gap-4 flex-1">
+                             {/* Imagen de la serie */}
+                             <div className="flex-shrink-0">
+                               {serie.imagenUrl ? (
+                                 <img
+                                   src={serie.imagenUrl}
+                                   alt={serie.nombre}
+                                   className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
+                                 />
+                               ) : (
+                                 <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
+                                   <span className="text-gray-500 text-sm">Sin imagen</span>
+                                 </div>
+                               )}
+                             </div>
+
+                             {/* Información de la serie */}
+                             <div className="flex-1">
+                               <h3 className="font-semibold text-lg" style={{ color: '#26558D' }}>
+                                 {serie.nombre}
+                               </h3>
+                               <p className="text-sm text-gray-600 mb-2">
+                                 {serie.descripcion || 'Sin descripción'}
+                               </p>
+                               <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                 <span>Estado: {serie.estado || 'No especificado'}</span>
+                                 <span>Temporada: {serie.temporada || 'No especificado'}</span>
+                                 <span>País: {serie.pais || 'No especificado'}</span>
+                                 <span>Equipos: {serie.equipos?.length || 0}</span>
+                                 <span>Fecha Lanzamiento: {serie.fechaLanzamiento ? new Date(serie.fechaLanzamiento).toLocaleDateString() : 'No especificado'}</span>
+                                 <span>Creada: {new Date(serie.createAt).toLocaleDateString()}</span>
+                               </div>
+                             </div>
                            </div>
-                           <div className="flex gap-2">
+
+                           {/* Botones de acción */}
+                           <div className="flex gap-2 ml-4">
                              <button
                                className="px-3 py-1 rounded-lg font-medium text-white text-sm"
                                style={{ backgroundColor: '#16FAD8', color: '#26558D' }}
@@ -1309,18 +1531,41 @@ export default function Dashboard() {
                      {equipos.slice((currentPageEquipos - 1) * itemsPerPage, currentPageEquipos * itemsPerPage).map((equipo) => (
                        <div key={equipo.id} className="border border-gray-200 rounded-lg p-4">
                          <div className="flex justify-between items-start">
-                           <div>
-                             <h3 className="font-semibold text-lg" style={{ color: '#26558D' }}>
-                               {equipo.nombre}
-                             </h3>
-                             <p className="text-sm text-gray-600 mt-1">
-                               {equipo.descripcion || 'Sin descripción'}
-                             </p>
-                             <p className="text-xs text-gray-500 mt-2">
-                               Jugadores: {equipo.jugadores?.length || 0}
-                             </p>
+                           <div className="flex items-start gap-4 flex-1">
+                             {/* Imagen del equipo */}
+                             <div className="flex-shrink-0">
+                               {equipo.imagenUrl ? (
+                                 <img
+                                   src={equipo.imagenUrl}
+                                   alt={equipo.nombre}
+                                   className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
+                                 />
+                               ) : (
+                                 <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
+                                   <span className="text-gray-500 text-sm">Sin imagen</span>
+                                 </div>
+                               )}
+                             </div>
+
+                             {/* Información del equipo */}
+                             <div className="flex-1">
+                               <h3 className="font-semibold text-lg" style={{ color: '#26558D' }}>
+                                 {equipo.nombre}
+                               </h3>
+                               <p className="text-sm text-gray-600 mb-2">
+                                 {equipo.descripcion || 'Sin descripción'}
+                               </p>
+                               <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                                 <span>Estadio: {equipo.estadio || 'No especificado'}</span>
+                                 <span>Ciudad: {equipo.ciudad || 'No especificado'}</span>
+                                 <span>Serie: {equipo.serie?.nombre || 'Sin serie'}</span>
+                                 <span>Jugadores: {equipo.jugadores?.length || 0}</span>
+                               </div>
+                             </div>
                            </div>
-                           <div className="flex gap-2">
+
+                           {/* Botones de acción */}
+                           <div className="flex gap-2 ml-4">
                              <button
                                className="px-3 py-1 rounded-lg font-medium text-white text-sm"
                                style={{ backgroundColor: '#16FAD8', color: '#26558D' }}
@@ -1429,7 +1674,7 @@ export default function Dashboard() {
                                </p>
                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
                                  <span>Equipo: {jugador.equipo?.nombre || 'Sin equipo'}</span>
-                                 <span>Serie: {jugador.equipo?.series && jugador.equipo.series.length > 0 ? jugador.equipo.series[0].nombre : 'Sin serie'}</span>
+                                 <span>Serie: {jugador.equipo?.serie?.nombre || 'Sin serie'}</span>
                                  <span>Rareza: {jugador.rareza}</span>
                                  <span>Nacionalidad: {jugador.nacionalidad}</span>
                                  <span>Edad: {jugador.fechaNacimiento ? new Date().getFullYear() - new Date(jugador.fechaNacimiento).getFullYear() : 'N/A'} años</span>
@@ -1727,7 +1972,16 @@ export default function Dashboard() {
                   onClick={() => {
                     setActiveTab('modificar-series');
                     setEditingSerie(null);
-                    setEditSerieForm({ nombre: '', descripcion: '', estado: '' });
+                    setEditSerieForm({
+                      nombre: '',
+                      descripcion: '',
+                      estado: '',
+                      temporada: '',
+                      pais: '',
+                      fechaLanzamiento: ''
+                    });
+                    setEditSerieImageFile(null);
+                    setEditSerieImagePreview(null);
                   }}
                   className="px-3 py-1 rounded-lg font-medium text-white text-sm"
                   style={{ backgroundColor: '#F218FF' }}
@@ -1736,43 +1990,98 @@ export default function Dashboard() {
                 </button>
               </div>
               <form onSubmit={handleUpdateSerie} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
-                    Nombre de la Serie *
-                  </label>
-                  <input
-                    type="text"
-                    value={editSerieForm.nombre}
-                    onChange={(e) => setEditSerieForm({ ...editSerieForm, nombre: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
-                    Descripción
-                  </label>
-                  <textarea
-                    value={editSerieForm.descripcion}
-                    onChange={(e) => setEditSerieForm({ ...editSerieForm, descripcion: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
-                    Estado
-                  </label>
-                  <select
-                    value={editSerieForm.estado}
-                    onChange={(e) => setEditSerieForm({ ...editSerieForm, estado: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Seleccionar estado</option>
-                    <option value="activa">Activa</option>
-                    <option value="inactiva">Inactiva</option>
-                    <option value="pendiente">Pendiente</option>
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Nombre de la Serie *
+                    </label>
+                    <input
+                      type="text"
+                      value={editSerieForm.nombre}
+                      onChange={(e) => setEditSerieForm({ ...editSerieForm, nombre: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Temporada
+                    </label>
+                    <input
+                      type="text"
+                      value={editSerieForm.temporada}
+                      onChange={(e) => setEditSerieForm({ ...editSerieForm, temporada: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      País
+                    </label>
+                    <input
+                      type="text"
+                      value={editSerieForm.pais}
+                      onChange={(e) => setEditSerieForm({ ...editSerieForm, pais: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Fecha de Lanzamiento
+                    </label>
+                    <input
+                      type="date"
+                      value={editSerieForm.fechaLanzamiento}
+                      onChange={(e) => setEditSerieForm({ ...editSerieForm, fechaLanzamiento: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Estado
+                    </label>
+                    <select
+                      value={editSerieForm.estado}
+                      onChange={(e) => setEditSerieForm({ ...editSerieForm, estado: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Seleccionar estado</option>
+                      <option value="activa">Activa</option>
+                      <option value="inactiva">Inactiva</option>
+                      <option value="pendiente">Pendiente</option>
+                    </select>
+                  </div>
+                  <div className="col-span-1 sm:col-span-2">
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Descripción
+                    </label>
+                    <textarea
+                      value={editSerieForm.descripcion}
+                      onChange={(e) => setEditSerieForm({ ...editSerieForm, descripcion: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="col-span-1 sm:col-span-2">
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Imagen de la Serie
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEditSerieImageChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {editSerieImagePreview && (
+                      <div className="mt-2">
+                        <img
+                          src={editSerieImagePreview}
+                          alt="Vista previa"
+                          className="w-32 h-32 object-cover rounded-md border border-gray-300"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <button
                   type="submit"
@@ -1797,6 +2106,8 @@ export default function Dashboard() {
                     setActiveTab('modificar-equipos');
                     setEditingEquipo(null);
                     setEditEquipoForm({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
+                    setEditEquipoImageFile(null);
+                    setEditEquipoImagePreview(null);
                   }}
                   className="px-3 py-1 rounded-lg font-medium text-white text-sm"
                   style={{ backgroundColor: '#F218FF' }}
@@ -1867,6 +2178,26 @@ export default function Dashboard() {
                     rows={3}
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                    Imagen del Equipo
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEditEquipoImageChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {editEquipoImagePreview && (
+                    <div className="mt-2">
+                      <img
+                        src={editEquipoImagePreview}
+                        alt="Vista previa"
+                        className="w-32 h-32 object-cover rounded-md border border-gray-300"
+                      />
+                    </div>
+                  )}
+                </div>
                 <button
                   type="submit"
                   disabled={loading}
@@ -1886,43 +2217,98 @@ export default function Dashboard() {
                 Crear Nueva Serie
               </h2>
               <form onSubmit={handleCreateSerie} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
-                    Nombre de la Serie *
-                  </label>
-                  <input
-                    type="text"
-                    value={serieForm.nombre}
-                    onChange={(e) => setSerieForm({ ...serieForm, nombre: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
-                    Descripción
-                  </label>
-                  <textarea
-                    value={serieForm.descripcion}
-                    onChange={(e) => setSerieForm({ ...serieForm, descripcion: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
-                    Estado
-                  </label>
-                  <select
-                    value={serieForm.estado}
-                    onChange={(e) => setSerieForm({ ...serieForm, estado: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Seleccionar estado</option>
-                    <option value="activa">Activa</option>
-                    <option value="inactiva">Inactiva</option>
-                    <option value="pendiente">Pendiente</option>
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Nombre de la Serie *
+                    </label>
+                    <input
+                      type="text"
+                      value={serieForm.nombre}
+                      onChange={(e) => setSerieForm({ ...serieForm, nombre: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Temporada
+                    </label>
+                    <input
+                      type="text"
+                      value={serieForm.temporada}
+                      onChange={(e) => setSerieForm({ ...serieForm, temporada: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      País
+                    </label>
+                    <input
+                      type="text"
+                      value={serieForm.pais}
+                      onChange={(e) => setSerieForm({ ...serieForm, pais: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Fecha de Lanzamiento
+                    </label>
+                    <input
+                      type="date"
+                      value={serieForm.fechaLanzamiento}
+                      onChange={(e) => setSerieForm({ ...serieForm, fechaLanzamiento: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Estado
+                    </label>
+                    <select
+                      value={serieForm.estado}
+                      onChange={(e) => setSerieForm({ ...serieForm, estado: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="">Seleccionar estado</option>
+                      <option value="activa">Activa</option>
+                      <option value="inactiva">Inactiva</option>
+                      <option value="pendiente">Pendiente</option>
+                    </select>
+                  </div>
+                  <div className="col-span-1 sm:col-span-2">
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Descripción
+                    </label>
+                    <textarea
+                      value={serieForm.descripcion}
+                      onChange={(e) => setSerieForm({ ...serieForm, descripcion: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="col-span-1 sm:col-span-2">
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                      Imagen de la Serie
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleSerieImageChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {serieImagePreview && (
+                      <div className="mt-2">
+                        <img
+                          src={serieImagePreview}
+                          alt="Vista previa"
+                          className="w-32 h-32 object-cover rounded-md border border-gray-300"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <button
                   type="submit"
@@ -2003,6 +2389,36 @@ export default function Dashboard() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                    Imagen del Equipo
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        setSerieImageFile(file); // Reutilizamos la variable de serie para equipos
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                          setSerieImagePreview(e.target?.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {serieImagePreview && (
+                    <div className="mt-2">
+                      <img
+                        src={serieImagePreview}
+                        alt="Vista previa"
+                        className="w-32 h-32 object-cover rounded-md border border-gray-300"
+                      />
+                    </div>
+                  )}
                 </div>
                 <button
                   type="submit"
@@ -2255,9 +2671,15 @@ export default function Dashboard() {
                              <p className="text-sm text-gray-600 mt-1">
                                {usuario.email}
                              </p>
-                             <p className="text-xs text-gray-500 mt-2">
-                               Rol: {usuario.role}
-                             </p>
+                             <div className="mt-2">
+                               <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
+                                 usuario.role === 'admin'
+                                   ? 'bg-red-100 text-red-800'
+                                   : 'bg-blue-100 text-blue-800'
+                               }`}>
+                                 {usuario.role === 'admin' ? 'Administrador' : 'Usuario'}
+                               </span>
+                             </div>
                            </div>
                            <div className="flex gap-2">
                              <button
@@ -2376,8 +2798,8 @@ export default function Dashboard() {
                     required
                   >
                     <option value="">Seleccionar rol</option>
-                    <option value="admin">Admin</option>
-                    <option value="user">User</option>
+                    <option value="admin">Administrador</option>
+                    <option value="user">Usuario</option>
                   </select>
                 </div>
                 <button
@@ -2424,6 +2846,19 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
+                    Contraseña *
+                  </label>
+                  <input
+                    type="password"
+                    value={usuarioForm.password}
+                    onChange={(e) => setUsuarioForm({ ...usuarioForm, password: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1" style={{ color: '#26558D' }}>
                     Rol *
                   </label>
                   <select
@@ -2433,8 +2868,8 @@ export default function Dashboard() {
                     required
                   >
                     <option value="">Seleccionar rol</option>
-                    <option value="admin">Admin</option>
-                    <option value="user">User</option>
+                    <option value="admin">Administrador</option>
+                    <option value="user">Usuario</option>
                   </select>
                 </div>
                 <button

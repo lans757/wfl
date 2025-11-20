@@ -7,7 +7,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0.0-38B2AC)](https://tailwindcss.com/)
 
-Aplicación frontend para el sistema de gestión de la World Football League (WFL), construida con Next.js.
+Aplicación frontend para el sistema de gestión de la Waifu Football League (WFL), construida con Next.js.
 
 ## Descripción
 
@@ -271,4 +271,4 @@ Este proyecto es privado y no tiene licencia pública.
 
 ## 📞 Soporte
 
-Si tienes preguntas o necesitas ayuda, abre un [issue](https://github.com/tu-usuario/wfl/issues) en GitHub.
+Si tienes preguntas o necesitas ayuda, abre un [issue](https://github.com/lans757/wfl/issues) en GitHub.

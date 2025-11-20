@@ -1,10 +1,26 @@
 # WFL Frontend
 
+![WFL Logo](public/logos/LOGO_WFL.png)
+
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16.0.0-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0.0-blue)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0.0-38B2AC)](https://tailwindcss.com/)
+
 Aplicación frontend para el sistema de gestión de la World Football League (WFL), construida con Next.js.
 
 ## Descripción
 
 Esta aplicación proporciona una interfaz de usuario moderna y responsiva para gestionar series, equipos, jugadores y autenticación de usuarios en la liga de fútbol.
+
+## ✨ Características
+
+- 🔐 **Autenticación de usuarios** - Sistema seguro de login y registro
+- ⚽ **Gestión de series** - Crear y administrar torneos y competiciones
+- 👥 **Equipos y jugadores** - Manejo completo de equipos y sus miembros
+- 📱 **Interfaz responsiva** - Optimizada para desktop y móvil
+- 🎨 **UI moderna** - Diseñada con Tailwind CSS para una experiencia visual atractiva
+- 🚀 **Desempeño optimizado** - Construida con Next.js para carga rápida
 
 ## Tecnologías Utilizadas
 
@@ -232,13 +248,27 @@ La aplicación está configurada para despliegue standalone. Consulta `DEPLOYMEN
 - **CORS**: Asegúrate de que el backend permita orígenes del dominio del frontend
 - **SSL**: Siempre usa HTTPS en producción
 
-## Contribución
+## 🤝 Contribución
 
-1. Crea una rama para tu feature
-2. Realiza tus cambios
-3. Ejecuta los tests y linting
-4. Crea un pull request
+¡Las contribuciones son bienvenidas! Para contribuir:
 
-## Licencia
+1. 🍴 **Fork** el proyecto
+2. 🌿 Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. 💾 Realiza tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. 📤 Push a la rama (`git push origin feature/AmazingFeature`)
+5. 🔄 Abre un Pull Request
+
+### Guías de contribución
+
+- Sigue las convenciones de código existentes
+- Agrega tests para nuevas funcionalidades
+- Actualiza la documentación según sea necesario
+- Asegúrate de que todos los tests pasan
+
+## 📄 Licencia
 
 Este proyecto es privado y no tiene licencia pública.
+
+## 📞 Soporte
+
+Si tienes preguntas o necesitas ayuda, abre un [issue](https://github.com/tu-usuario/wfl/issues) en GitHub.

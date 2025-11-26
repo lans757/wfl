@@ -1,5 +1,5 @@
 # Dockerfile para el Frontend (Next.js)
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Instalar pnpm
 RUN npm install -g pnpm
@@ -11,7 +11,7 @@ WORKDIR /app
 
 # Copiar archivos de dependencias
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --prod --frozen-lockfile --ignore-scripts
 
 # Build stage
 FROM base AS builder

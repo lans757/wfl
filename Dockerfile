@@ -1,14 +1,17 @@
 # Dockerfile para el Frontend (Next.js)
 FROM node:18-alpine AS base
 
+# Instalar pnpm
+RUN npm install -g pnpm
+
 # Instalar dependencias solo para producción
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copiar archivos de dependencias
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production && npm cache clean --force
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --prod --frozen-lockfile
 
 # Build stage
 FROM base AS builder
@@ -16,12 +19,15 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Install all dependencies (including dev) for build
+RUN pnpm install --frozen-lockfile
+
 # Configurar variables de entorno para build
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV production
 
 # Build de la aplicación
-RUN npm run build
+RUN pnpm run build
 
 # Production stage
 FROM base AS runner

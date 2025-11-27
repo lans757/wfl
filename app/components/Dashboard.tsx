@@ -166,7 +166,7 @@ export default function Dashboard() {
 
   const fetchUsuarios = async (token: string) => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/users`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsuarios(response.data);
@@ -903,7 +903,7 @@ export default function Dashboard() {
         ...usuarioForm
       };
 
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/users`, createData, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/users`, createData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -945,7 +945,7 @@ export default function Dashboard() {
         role: editUsuarioForm.role
       };
 
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/users/${editingUsuario.id}`, updateData, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/users/${editingUsuario.id}`, updateData, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -977,7 +977,7 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem('wfl_token');
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/users/${usuarioId}`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/users/${usuarioId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

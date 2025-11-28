@@ -38,7 +38,7 @@ export default function LoginCard() {
         ? { email, password, name, role: 'user' }
         : { email, password };
 
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/${endpoint}`, payload);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/auth/${endpoint}`, payload);
 
       if (response.data.access_token) {
         localStorage.setItem('wfl_token', response.data.access_token);

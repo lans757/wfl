@@ -20,6 +20,7 @@ interface Serie {
   pais?: string;
   createAt: string;
   equipos: Equipo[];
+  imagenUrl?: string;
 }
 
 interface Equipo {
@@ -169,7 +170,7 @@ export default function HomePage() {
   return (
     <div
       className="min-h-screen flex relative overflow-hidden"
-      style={{ backgroundColor: '#E7E6F7' }}
+      style={{ backgroundColor: '#e5cedc' }}
     >
       {/* Vista de Equipos de una Serie */}
       {showSerieEquiposView && selectedSerie && (
@@ -787,7 +788,7 @@ export default function HomePage() {
               <h1
                 className="text-3xl md:text-4xl font-bold mb-4 animate-fade-in text-responsive"
                 style={{
-                  color: '#26558D',
+                  color: '#26558d',
                   fontFamily: 'system-ui, -apple-system, sans-serif',
                   letterSpacing: '0.1em',
                   textShadow: '0 2px 10px rgba(22, 250, 216, 0.4)',
@@ -804,27 +805,93 @@ export default function HomePage() {
                   animationDelay: '0.2s'
                 }}
               >
-                Hola {user?.name}, estás en la plataforma de fútbol más emocionante
+                Hola {user?.name}, el lugar donde las series y equipos cobran vida.
               </p>
+            </div>
+
+            {/* Sección de Últimas Series */}
+            <div className="mt-12 mb-8">
+              <h2 className="text-2xl font-bold text-center mb-8" style={{ color: '#26558d' }}>
+                Últimas Series que tenemos disponibles
+              </h2>
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#26558d' }}></div>
+                  <p style={{ color: '#26558d' }}>Cargando series...</p>
+                </div>
+              ) : latestSeries.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {latestSeries.slice(0, 3).map((serie, index) => (
+                    <div
+                      key={serie.id}
+                      className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-6 border border-gray-600 hover:border-blue-400 transition-all duration-300"
+                      style={{ borderColor: '#16fad8' }}
+                    >
+                      <div className="text-center mb-4">
+                        <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ backgroundColor: '#16fad8' }}>
+                          {serie.imagenUrl ? (
+                            <img
+                              src={serie.imagenUrl}
+                              alt={serie.nombre}
+                              className="w-full h-full object-cover rounded-full"
+                            />
+                          ) : (
+                            <svg className="w-8 h-8" fill="none" stroke="#26558d" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                          )}
+                        </div>
+                        <h3 className="text-xl font-bold mb-2" style={{ color: '#26558d' }}>
+                          {serie.nombre}
+                        </h3>
+                        <p className="text-sm mb-4" style={{ color: '#8f9491' }}>
+                          {serie.descripcion || 'Sin descripción disponible'}
+                        </p>
+                        <button
+                          onClick={() => handleShowSerieEquipos(serie)}
+                          className="px-6 py-2 rounded-lg font-semibold text-white transition-all duration-300 hover:scale-105"
+                          style={{ backgroundColor: '#26558d' }}
+                        >
+                          Ver Equipos
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-24 h-24 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f218ff' }}>
+                    <svg className="w-12 h-12" fill="none" stroke="white" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: '#26558d' }}>
+                    No hay series disponibles
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Las series aparecerán aquí cuando sean creadas por el administrador.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Decoración inferior */}
             <div className="flex justify-center gap-3 mt-8">
               <div
                 className="w-2.5 h-2.5 rounded-full animate-pulse"
-                style={{ backgroundColor: '#16FAD8' }}
+                style={{ backgroundColor: '#16fad8' }}
               />
               <div
                 className="w-2.5 h-2.5 rounded-full animate-pulse"
                 style={{
-                  backgroundColor: '#F218FF',
+                  backgroundColor: '#f218ff',
                   animationDelay: '0.2s'
                 }}
               />
               <div
                 className="w-2.5 h-2.5 rounded-full animate-pulse"
                 style={{
-                  backgroundColor: '#5ECDDC',
+                  backgroundColor: '#5ecddc',
                   animationDelay: '0.4s'
                 }}
               />
@@ -846,7 +913,7 @@ export default function HomePage() {
             {/* Ícono Home */}
             <button
               className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110"
-              style={{ color: '#16FAD8' }}
+              style={{ color: '#16fad8' }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -858,12 +925,12 @@ export default function HomePage() {
             <button
               onClick={handleShowSeries}
               className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110"
-              style={{ color: '#26558D' }}
+              style={{ color: '#26558d' }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#16FAD8';
+                e.currentTarget.style.color = '#16fad8';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#26558D';
+                e.currentTarget.style.color = '#26558d';
               }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -876,12 +943,12 @@ export default function HomePage() {
             <button
               onClick={handleNavigateToStore}
               className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110"
-              style={{ color: '#26558D' }}
+              style={{ color: '#26558d' }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = '#F218FF';
+                e.currentTarget.style.color = '#f218ff';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#26558D';
+                e.currentTarget.style.color = '#26558d';
               }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -895,12 +962,12 @@ export default function HomePage() {
               <button
                 onClick={toggleUserDropdown}
                 className="flex flex-col items-center gap-1 transition-transform duration-200 hover:scale-110"
-                style={{ color: '#26558D' }}
+                style={{ color: '#26558d' }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#5ECDDC';
+                  e.currentTarget.style.color = '#5ecddc';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = '#26558D';
+                  e.currentTarget.style.color = '#26558d';
                 }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

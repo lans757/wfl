@@ -81,9 +81,9 @@ export default function LoginCard() {
   const shouldShowFooter = isLoggedIn && pathname !== '/';
 
   return (
-    <div 
+    <div
       className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden"
-      style={{ backgroundColor: '#E7E6F7' }}
+      style={{ backgroundColor: '#e5cedc' }}
     >
       {/* Fondo animado con ondas */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -107,16 +107,16 @@ export default function LoginCard() {
           />
         </svg>
         {/* Líneas dinámicas decorativas */}
-        <div className="absolute top-20 left-0 w-full h-px bg-gradient-to-r from-transparent via-#16FAD8 to-transparent opacity-30" 
-             style={{ 
-               background: 'linear-gradient(to right, transparent, #16FAD8, transparent)',
-               animation: 'slide 10s linear infinite'
-             }} />
+        <div className="absolute top-20 left-0 w-full h-px bg-gradient-to-r from-transparent via-#16FAD8 to-transparent opacity-30"
+              style={{
+                background: 'linear-gradient(to right, transparent, #16FAD8, transparent)',
+                animation: 'slide 10s linear infinite'
+              }} />
         <div className="absolute top-40 right-0 w-px h-64 bg-gradient-to-b from-transparent via-#F218FF to-transparent opacity-20"
-             style={{ 
-               background: 'linear-gradient(to bottom, transparent, #F218FF, transparent)',
-               animation: 'slideVertical 12s linear infinite'
-             }} />
+              style={{
+                background: 'linear-gradient(to bottom, transparent, #F218FF, transparent)',
+                animation: 'slideVertical 12s linear infinite'
+              }} />
       </div>
 
       {/* Contenedor principal con fade-in */}
@@ -150,19 +150,19 @@ export default function LoginCard() {
              <h1
                className="text-3xl md:text-4xl font-bold mb-3"
                style={{
-                 color: '#26558D',
+                 color: '#26558d',
                  fontFamily: 'system-ui, -apple-system, sans-serif',
                  letterSpacing: '0.1em',
                  textShadow: '0 2px 10px rgba(22, 250, 216, 0.4)',
                  fontWeight: 800
                }}
              >
-               {isRegistering ? 'Registrarse WFL' : 'Iniciar Sesión WFL'}
+               {isRegistering ? 'Regístrate en Premios WFL' : 'Inicia Sesión en Premios WFL'}
              </h1>
              <div
                className="h-1 w-24 mx-auto rounded-full"
                style={{
-                 backgroundColor: '#F218FF',
+                 backgroundColor: '#f218ff',
                  boxShadow: '0 2px 8px rgba(242, 24, 255, 0.5)'
                }}
              />
@@ -176,7 +176,7 @@ export default function LoginCard() {
                 <label
                   htmlFor="name"
                   className="block text-sm font-semibold mb-2"
-                  style={{ color: '#26558D' }}
+                  style={{ color: '#FFFFFF' }}
                 >
                   Nombre Completo
                 </label>
@@ -471,20 +471,20 @@ export default function LoginCard() {
 
           {/* Decoración inferior */}
           <div className="mt-8 flex justify-center gap-3">
-            <div 
+            <div
               className="w-2.5 h-2.5 rounded-full animate-pulse"
               style={{ backgroundColor: '#16FAD8' }}
             />
-            <div 
+            <div
               className="w-2.5 h-2.5 rounded-full animate-pulse"
-              style={{ 
+              style={{
                 backgroundColor: '#F218FF',
                 animationDelay: '0.2s'
               }}
             />
-            <div 
+            <div
               className="w-2.5 h-2.5 rounded-full animate-pulse"
-              style={{ 
+              style={{
                 backgroundColor: '#5ECDDC',
                 animationDelay: '0.4s'
               }}

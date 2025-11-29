@@ -272,3 +272,57 @@ Este proyecto es privado y no tiene licencia pública.
 ## 📞 Soporte
 
 Si tienes preguntas o necesitas ayuda, abre un [issue](https://github.com/lans757/wfl/issues) en GitHub.
+
+## 📋 Changelog - Actualizaciones Recientes
+
+### v1.1.0 - Correcciones y Mejoras (2025-11-29)
+
+#### 🎨 Mejoras en la Interfaz de Usuario
+- **Imágenes reales en vistas**: Las tarjetas de series y equipos ahora muestran las imágenes subidas reales en lugar de íconos estáticos
+- **Vista de series mejorada**: Las tarjetas de series muestran imágenes reales con fallback elegante a íconos SVG
+- **Vista de equipos mejorada**: Los equipos en las vistas de series muestran sus imágenes subidas
+- **Manejo de errores de imágenes**: Implementado fallback automático a íconos SVG cuando las imágenes fallan al cargar
+
+#### 🔧 Mejoras Técnicas
+- **URLs de imágenes corregidas**: Hardcodeado `localhost:4000` para asegurar construcción correcta de URLs de imágenes
+- **Interfaces TypeScript actualizadas**: Agregado campo `imagen` a la interfaz `Equipo` en el frontend
+- **Campos de formulario corregidos**: Los formularios de creación/edición de equipos ahora usan nombres de campos en inglés correctos
+- **Validación de formularios mejorada**: Mejorada la validación en formularios de creación de equipos
+
+#### 📱 Experiencia de Usuario
+- **Carga más robusta**: La interfaz no se bloquea si algunos endpoints fallan
+- **Mensajes de error mejorados**: Mejor manejo de errores con logging detallado
+- **Navegación fluida**: Transiciones suaves entre vistas de series y equipos
+- **Interfaz responsiva**: Optimizada para desktop y móvil
+
+#### 🔄 Integración con Backend
+- **Campos de imagen consistentes**: Unificado el uso de `imagen` en lugar de `image` en toda la aplicación
+- **API calls mejorados**: Reemplazado `Promise.all` con llamadas individuales para evitar bloqueos
+- **Manejo de autenticación**: Mejorado el manejo de tokens JWT y redirecciones
+- **Validación de entrada**: Mejorada la validación de datos en formularios
+
+### Problemas Resueltos
+- ✅ Imágenes no se mostraban en vistas de usuario (solo íconos SVG)
+- ✅ Formularios de equipos enviando campos en español al backend
+- ✅ `Promise.all` bloqueando la interfaz cuando un endpoint fallaba
+- ✅ URLs de imágenes mal construidas en el frontend
+- ✅ Inconsistencias entre campos `image`/`imagen` entre frontend y backend
+- ✅ Validación incorrecta de formularios de creación de equipos
+
+### Nuevas Características
+- 🖼️ **Visualización de imágenes reales**: Series y equipos muestran sus imágenes subidas
+- 🔄 **Fallback automático**: Íconos SVG cuando las imágenes no cargan
+- 📋 **Interfaces actualizadas**: Mejor tipado TypeScript para datos de equipos
+- 🎯 **Validación mejorada**: Formularios más robustos con mejor feedback
+
+### Compatibilidad
+- **Frontend**: Next.js 16.0.0, React 19, TypeScript 5.0.0, Tailwind CSS 3.0.0
+- **Backend**: NestJS 10.0.0, Prisma 5.0.0
+- **Navegadores**: Soporte completo con fallback para imágenes
+- **Dispositivos**: Interfaz responsiva para desktop y móvil
+
+### Mejoras de Rendimiento
+- **Carga optimizada**: Imágenes cargan eficientemente con manejo de errores
+- **Navegación fluida**: Transiciones suaves entre vistas
+- **Gestión de estado**: Mejor manejo del estado de la aplicación
+- **Logging mejorado**: Mejor debugging y monitoreo de errores

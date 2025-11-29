@@ -13,32 +13,33 @@ interface User {
 
 interface Serie {
   id: number;
-  nombre: string;
-  descripcion?: string;
-  estado?: string;
-  temporada?: string;
-  pais?: string;
-  createAt: string;
-  equipos: Equipo[];
-  imagenUrl?: string;
+  name: string;
+  description?: string;
+  status?: string;
+  season?: string;
+  country?: string;
+  createdAt: string;
+  teams: Equipo[];
+  imagen?: string;
 }
 
 interface Equipo {
   id: number;
-  nombre: string;
-  descripcion?: string;
-  estadio?: string;
-  ciudad?: string;
+  name: string;
+  description?: string;
+  stadium?: string;
+  city?: string;
   series: Serie[];
-  jugadores: Jugador[];
+  players: Jugador[];
+  imagen?: string;
 }
 
 interface Jugador {
   id: number;
-  nombre: string;
-  numeroCamiseta: number;
-  posicion: string;
-  equipo?: Equipo;
+  name: string;
+  jerseyNumber: number;
+  position: string;
+  team?: Equipo;
 }
 
 export default function HomePage() {
@@ -77,27 +78,48 @@ export default function HomePage() {
   const loadDashboardData = async (token: string) => {
     setLoading(true);
     try {
-      const [seriesRes, equiposRes, jugadoresRes, allSeriesRes] = await Promise.all([
-        axios.get('http://localhost:4000/api/series/latest', {
+      // Cargar datos individualmente para evitar que un error en uno bloquee los demás
+      try {
+        const seriesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/series/latest`, {
           headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:4000/api/equipos/with-series', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:4000/api/jugadores/with-details', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get('http://localhost:4000/api/series', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-      ]);
+        });
+        setLatestSeries(seriesRes.data);
+      } catch (error) {
+        console.error('Error cargando series:', error);
+        setLatestSeries([]);
+      }
 
-      setLatestSeries(seriesRes.data);
-      setEquiposWithSeries(equiposRes.data);
-      setJugadoresWithDetails(jugadoresRes.data);
-      setAllSeries(allSeriesRes.data);
+      try {
+        const equiposRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/teams/with-series`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setEquiposWithSeries(equiposRes.data);
+      } catch (error) {
+        console.error('Error cargando equipos:', error);
+        setEquiposWithSeries([]);
+      }
+
+      try {
+        const jugadoresRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/players/with-details`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setJugadoresWithDetails(jugadoresRes.data);
+      } catch (error) {
+        console.error('Error cargando jugadores:', error);
+        setJugadoresWithDetails([]);
+      }
+
+      try {
+        const allSeriesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/series`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setAllSeries(allSeriesRes.data);
+      } catch (error) {
+        console.error('Error cargando todas las series:', error);
+        setAllSeries([]);
+      }
     } catch (error: any) {
-      console.error('Error cargando datos del dashboard:', error);
+      console.error('Error general cargando datos del dashboard:', error);
       if (error.response?.status === 401) {
         // Token expirado o inválido
         localStorage.removeItem('wfl_token');
@@ -192,10 +214,10 @@ export default function HomePage() {
                   </button>
                   <div>
                     <h1 className="text-2xl font-bold" style={{ color: '#26558D' }}>
-                      Equipos de {selectedSerie.nombre}
+                      Equipos de {selectedSerie.name}
                     </h1>
                     <p className="text-sm text-gray-600 mt-1">
-                      {selectedSerie.equipos?.length || 0} equipos en esta serie
+                      {selectedSerie.teams?.length || 0} equipos en esta serie
                     </p>
                   </div>
                 </div>
@@ -209,9 +231,9 @@ export default function HomePage() {
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: '#26558D' }}></div>
                   <p style={{ color: '#26558D' }}>Cargando equipos...</p>
                 </div>
-              ) : selectedSerie.equipos && selectedSerie.equipos.length > 0 ? (
+              ) : selectedSerie.teams && selectedSerie.teams.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {selectedSerie.equipos.map((equipo) => (
+                  {selectedSerie.teams.map((equipo) => (
                     <div
                       key={equipo.id}
                       className="bg-white rounded-3xl shadow-2xl p-6 backdrop-blur-sm animate-fade-in border-2"
@@ -222,19 +244,36 @@ export default function HomePage() {
                       }}
                     >
                       <div className="text-center mb-4">
-                        <div
-                          className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
-                          style={{ backgroundColor: '#F218FF' }}
-                        >
-                          <svg className="w-8 h-8" fill="none" stroke="white" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                          </svg>
+                        <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#F218FF' }}>
+                          {equipo.imagen ? (
+                            <img
+                              src={`http://localhost:4000${equipo.imagen}`}
+                              alt={equipo.name}
+                              className="w-full h-full object-cover rounded-full"
+                              onError={(e) => {
+                                console.error('Error loading image for equipo:', equipo.name, equipo.imagen);
+                                e.currentTarget.style.display = 'none';
+                                // Force re-render to show SVG
+                                const svg = document.createElement('svg');
+                                svg.className = 'w-8 h-8';
+                                svg.setAttribute('fill', 'none');
+                                svg.setAttribute('stroke', 'white');
+                                svg.setAttribute('viewBox', '0 0 24 24');
+                                svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />';
+                                e.currentTarget.parentElement!.appendChild(svg);
+                              }}
+                            />
+                          ) : (
+                            <svg className="w-8 h-8" fill="none" stroke="white" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                          )}
                         </div>
                         <h3
                           className="text-xl font-bold mb-2"
                           style={{ color: '#26558D' }}
                         >
-                          {equipo.nombre}
+                          {equipo.name}
                         </h3>
                       </div>
 
@@ -244,41 +283,41 @@ export default function HomePage() {
                             Información:
                           </p>
                           <div className="text-xs text-gray-500 space-y-1">
-                            {equipo.estadio && <p>Estadio: {equipo.estadio}</p>}
-                            {equipo.ciudad && <p>Ciudad: {equipo.ciudad}</p>}
-                            <p>Jugadores: {equipo.jugadores?.length || 0}</p>
+                            {equipo.stadium && <p>Estadio: {equipo.stadium}</p>}
+                            {equipo.city && <p>Ciudad: {equipo.city}</p>}
+                            <p>Jugadores: {equipo.players?.length || 0}</p>
                           </div>
                         </div>
 
-                        {equipo.descripcion && (
+                        {equipo.description && (
                           <div>
                             <p className="text-sm font-medium mb-2" style={{ color: '#26558D' }}>
                               Descripción:
                             </p>
                             <p className="text-sm text-gray-600">
-                              {equipo.descripcion}
+                              {equipo.description}
                             </p>
                           </div>
                         )}
 
-                        {equipo.jugadores && equipo.jugadores.length > 0 && (
+                        {equipo.players && equipo.players.length > 0 && (
                           <div>
                             <p className="text-sm font-medium mb-2" style={{ color: '#26558D' }}>
                               Jugadores destacados:
                             </p>
                             <div className="flex flex-wrap gap-2">
-                              {equipo.jugadores.slice(0, 3).map((jugador) => (
+                              {equipo.players.slice(0, 3).map((jugador) => (
                                 <span
                                   key={jugador.id}
                                   className="text-xs px-2 py-1 rounded-full"
                                   style={{ backgroundColor: '#16FAD8', color: '#26558D' }}
                                 >
-                                  #{jugador.numeroCamiseta} {jugador.nombre}
+                                  #{jugador.jerseyNumber} {jugador.name}
                                 </span>
                               ))}
-                              {equipo.jugadores.length > 3 && (
+                              {equipo.players.length > 3 && (
                                 <span className="text-xs px-2 py-1 rounded-full bg-gray-200" style={{ color: '#26558D' }}>
-                                  +{equipo.jugadores.length - 3} más
+                                  +{equipo.players.length - 3} más
                                 </span>
                               )}
                             </div>
@@ -371,29 +410,46 @@ export default function HomePage() {
                       }}
                     >
                       <div className="text-center mb-4">
-                        <div
-                          className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center"
-                          style={{ backgroundColor: '#16FAD8' }}
-                        >
-                          <svg className="w-8 h-8" fill="none" stroke="#26558D" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                          </svg>
+                        <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#16fad8' }}>
+                          {serie.imagen ? (
+                            <img
+                              src={`http://localhost:4000${serie.imagen}`}
+                              alt={serie.name}
+                              className="w-full h-full object-cover rounded-full"
+                              onError={(e) => {
+                                console.error('Error loading image for serie:', serie.name, serie.imagen);
+                                e.currentTarget.style.display = 'none';
+                                // Force re-render to show SVG
+                                const svg = document.createElement('svg');
+                                svg.className = 'w-8 h-8';
+                                svg.setAttribute('fill', 'none');
+                                svg.setAttribute('stroke', '#26558d');
+                                svg.setAttribute('viewBox', '0 0 24 24');
+                                svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />';
+                                e.currentTarget.parentElement!.appendChild(svg);
+                              }}
+                            />
+                          ) : (
+                            <svg className="w-8 h-8" fill="none" stroke="#26558D" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                          )}
                         </div>
                         <h3
                           className="text-xl font-bold mb-2"
                           style={{ color: '#26558D' }}
                         >
-                          {serie.nombre}
+                          {serie.name}
                         </h3>
-                        {serie.estado && (
+                        {serie.status && (
                           <span
                             className="inline-block px-3 py-1 rounded-full text-xs font-medium"
                             style={{
-                              backgroundColor: serie.estado === 'activa' ? '#16FAD8' : '#F218FF',
+                              backgroundColor: serie.status === 'activa' ? '#16FAD8' : '#F218FF',
                               color: '#26558D'
                             }}
                           >
-                            {serie.estado}
+                            {serie.status}
                           </span>
                         )}
                       </div>
@@ -404,43 +460,43 @@ export default function HomePage() {
                             Descripción:
                           </p>
                           <p className="text-sm text-gray-600">
-                            {serie.descripcion || 'Sin descripción disponible'}
+                            {serie.description || 'Sin descripción disponible'}
                           </p>
                         </div>
 
+                      <div>
+                        <p className="text-sm font-medium mb-2" style={{ color: '#26558D' }}>
+                          Información:
+                        </p>
+                        <div className="text-xs text-gray-500 space-y-1">
+                          <p>Equipos: {serie.teams?.length || 0}</p>
+                          <p>Creada: {new Date(serie.createdAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+
+                      {serie.teams && serie.teams.length > 0 && (
                         <div>
                           <p className="text-sm font-medium mb-2" style={{ color: '#26558D' }}>
-                            Información:
+                            Equipos participantes:
                           </p>
-                          <div className="text-xs text-gray-500 space-y-1">
-                            <p>Equipos: {serie.equipos?.length || 0}</p>
-                            <p>Creada: {new Date(serie.createAt).toLocaleDateString()}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {serie.teams.slice(0, 3).map((equipo) => (
+                              <span
+                                key={equipo.id}
+                                className="text-xs px-2 py-1 rounded-full"
+                                style={{ backgroundColor: '#16FAD8', color: '#26558D' }}
+                              >
+                                {equipo.name}
+                              </span>
+                            ))}
+                            {serie.teams.length > 3 && (
+                              <span className="text-xs px-2 py-1 rounded-full bg-gray-200" style={{ color: '#26558D' }}>
+                                +{serie.teams.length - 3} más
+                              </span>
+                            )}
                           </div>
                         </div>
-
-                        {serie.equipos && serie.equipos.length > 0 && (
-                          <div>
-                            <p className="text-sm font-medium mb-2" style={{ color: '#26558D' }}>
-                              Equipos participantes:
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {serie.equipos.slice(0, 3).map((equipo) => (
-                                <span
-                                  key={equipo.id}
-                                  className="text-xs px-2 py-1 rounded-full"
-                                  style={{ backgroundColor: '#16FAD8', color: '#26558D' }}
-                                >
-                                  {equipo.nombre}
-                                </span>
-                              ))}
-                              {serie.equipos.length > 3 && (
-                                <span className="text-xs px-2 py-1 rounded-full bg-gray-200" style={{ color: '#26558D' }}>
-                                  +{serie.equipos.length - 3} más
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )}
+                      )}
                       </div>
                     </div>
                   ))}
@@ -625,10 +681,10 @@ export default function HomePage() {
                       latestSeries.map((serie, index) => (
                         <div key={serie.id} className="bg-gray-50 rounded-lg p-3">
                           <h4 className="font-semibold text-sm" style={{ color: '#26558D' }}>
-                            {serie.nombre}
+                            {serie.name}
                           </h4>
                           <p className="text-xs" style={{ color: '#5ECDDC' }}>
-                            {serie.temporada || 'Sin temporada'} • {serie.equipos.length} equipos
+                            {serie.season || 'Sin temporada'} • {serie.teams.length} equipos
                           </p>
                         </div>
                       ))
@@ -675,10 +731,10 @@ export default function HomePage() {
                       equiposWithSeries.map((equipo) => (
                         <div key={equipo.id} className="bg-gray-50 rounded-lg p-3">
                           <h4 className="font-semibold text-sm" style={{ color: '#26558D' }}>
-                            {equipo.nombre}
+                            {equipo.name}
                           </h4>
                           <p className="text-xs" style={{ color: '#5ECDDC' }}>
-                            {equipo.series.length} series • {equipo.jugadores.length} jugadores
+                            {equipo.series.length} series • {equipo.players.length} jugadores
                           </p>
                           {equipo.series.length > 0 && (
                             <div className="mt-2">
@@ -692,7 +748,7 @@ export default function HomePage() {
                                     className="text-xs px-2 py-1 rounded-full"
                                     style={{ backgroundColor: '#16FAD8', color: '#26558D' }}
                                   >
-                                    {serie.nombre}
+                                    {serie.name}
                                   </span>
                                 ))}
                                 {equipo.series.length > 2 && (
@@ -750,24 +806,24 @@ export default function HomePage() {
                           <div className="flex justify-between items-start">
                             <div>
                               <h4 className="font-semibold text-sm" style={{ color: '#26558D' }}>
-                                {jugador.nombre}
+                                {jugador.name}
                               </h4>
                               <p className="text-xs" style={{ color: '#5ECDDC' }}>
-                                #{jugador.numeroCamiseta} • {jugador.posicion}
+                                #{jugador.jerseyNumber} • {jugador.position}
                               </p>
-                              {jugador.equipo && (
+                              {jugador.team && (
                                 <p className="text-xs font-medium" style={{ color: '#F218FF' }}>
-                                  {jugador.equipo.nombre}
+                                  {jugador.team.name}
                                 </p>
                               )}
                             </div>
                             <div className="text-right">
-                              {jugador.equipo?.series && jugador.equipo.series.length > 0 && (
+                              {jugador.team?.series && jugador.team.series.length > 0 && (
                                 <span
                                   className="text-xs px-2 py-1 rounded-full"
                                   style={{ backgroundColor: '#16FAD8', color: '#26558D' }}
                                 >
-                                  {jugador.equipo.series[0].nombre}
+                                  {jugador.team.series[0].name}
                                 </span>
                               )}
                             </div>
@@ -828,12 +884,24 @@ export default function HomePage() {
                       style={{ borderColor: '#16fad8' }}
                     >
                       <div className="text-center mb-4">
-                        <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center" style={{ backgroundColor: '#16fad8' }}>
-                          {serie.imagenUrl ? (
+                        <div className="w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center overflow-hidden" style={{ backgroundColor: '#16fad8' }}>
+                          {serie.imagen ? (
                             <img
-                              src={serie.imagenUrl}
-                              alt={serie.nombre}
+                              src={`http://localhost:4000${serie.imagen}`}
+                              alt={serie.name}
                               className="w-full h-full object-cover rounded-full"
+                              onError={(e) => {
+                                console.error('Error loading image for serie:', serie.name, serie.imagen);
+                                e.currentTarget.style.display = 'none';
+                                // Force re-render to show SVG
+                                const svg = document.createElement('svg');
+                                svg.className = 'w-8 h-8';
+                                svg.setAttribute('fill', 'none');
+                                svg.setAttribute('stroke', '#26558d');
+                                svg.setAttribute('viewBox', '0 0 24 24');
+                                svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />';
+                                e.currentTarget.parentElement!.appendChild(svg);
+                              }}
                             />
                           ) : (
                             <svg className="w-8 h-8" fill="none" stroke="#26558d" viewBox="0 0 24 24">
@@ -842,10 +910,10 @@ export default function HomePage() {
                           )}
                         </div>
                         <h3 className="text-xl font-bold mb-2" style={{ color: '#26558d' }}>
-                          {serie.nombre}
+                          {serie.name}
                         </h3>
                         <p className="text-sm mb-4" style={{ color: '#8f9491' }}>
-                          {serie.descripcion || 'Sin descripción disponible'}
+                          {serie.description || 'Sin descripción disponible'}
                         </p>
                         <button
                           onClick={() => handleShowSerieEquipos(serie)}

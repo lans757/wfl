@@ -29,7 +29,7 @@ export default function Dashboard() {
     pais: '',
     fechaLanzamiento: ''
   });
-  const [equipoForm, setEquipoForm] = useState({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
+  const [equipoForm, setEquipoForm] = useState({ name: '', description: '', stadium: '', city: '', seriesId: '' });
   const [jugadorForm, setJugadorForm] = useState({
     nombre: '',
     numeroCamiseta: '',
@@ -61,7 +61,7 @@ export default function Dashboard() {
     fechaLanzamiento: ''
   });
   const [editingEquipo, setEditingEquipo] = useState<any>(null);
-  const [editEquipoForm, setEditEquipoForm] = useState({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
+  const [editEquipoForm, setEditEquipoForm] = useState({ name: '', description: '', stadium: '', city: '', seriesId: '' });
   const [editingJugador, setEditingJugador] = useState<any>(null);
   const [editJugadorForm, setEditJugadorForm] = useState({
     nombre: '',
@@ -132,7 +132,7 @@ export default function Dashboard() {
   const fetchEquipos = async (token: string) => {
     try {
       console.log('Cargando equipos desde API...');
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/teams`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log('Equipos obtenidos:', response.data);
@@ -155,7 +155,7 @@ export default function Dashboard() {
 
   const fetchJugadores = async (token: string) => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jugadores`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/players`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setJugadores(response.data);
@@ -181,10 +181,10 @@ export default function Dashboard() {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/series/count`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos/count`, {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/teams/count`, {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jugadores/count`, {
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/players/count`, {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -275,8 +275,8 @@ export default function Dashboard() {
         // Agregar campos de texto
         Object.entries(equipoForm).forEach(([key, value]) => {
           if (value !== null && value !== '') {
-            if (key === 'serieId' && value) {
-              formData.append(key, parseInt(value).toString());
+            if (key === 'seriesId' && value) {
+              formData.append('seriesId', parseInt(value).toString());
             } else if (typeof value === 'string') {
               formData.append(key, value);
             }
@@ -286,7 +286,7 @@ export default function Dashboard() {
         // Agregar imagen
         formData.append('imagen', serieImageFile);
 
-        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos`, formData, {
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/teams`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -296,15 +296,15 @@ export default function Dashboard() {
         // Sin imagen, enviar JSON normal
         const createData = {
           ...equipoForm,
-          serieId: equipoForm.serieId && equipoForm.serieId !== '' ? parseInt(equipoForm.serieId) : undefined
+          seriesId: equipoForm.seriesId && equipoForm.seriesId !== '' ? parseInt(equipoForm.seriesId) : undefined
         };
 
-        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos`, createData, {
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/teams`, createData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
 
-      setEquipoForm({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
+      setEquipoForm({ name: '', description: '', stadium: '', city: '', seriesId: '' });
       setSerieImageFile(null);
       setSerieImagePreview(null);
       setSuccess('Equipo creado exitosamente');
@@ -410,7 +410,7 @@ export default function Dashboard() {
         formData.append('imagen', imageFile);
       }
 
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jugadores`, formData, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/players`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -470,7 +470,7 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem('wfl_token');
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jugadores/import-excel`, formData, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/players/import-excel`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data'
@@ -518,15 +518,15 @@ export default function Dashboard() {
       const serieData = response.data;
       setEditingSerie(serieData);
       setEditSerieForm({
-        nombre: serieData.nombre,
-        descripcion: serieData.descripcion || '',
-        estado: serieData.estado || '',
-        temporada: serieData.temporada || '',
-        pais: serieData.pais || '',
-        fechaLanzamiento: serieData.fechaLanzamiento ? new Date(serieData.fechaLanzamiento).toISOString().split('T')[0] : ''
+        nombre: serieData.name,
+        descripcion: serieData.description || '',
+        estado: serieData.status || '',
+        temporada: serieData.season || '',
+        pais: serieData.country || '',
+        fechaLanzamiento: serieData.launchDate ? new Date(serieData.launchDate).toISOString().split('T')[0] : ''
       });
       setEditSerieImageFile(null);
-      setEditSerieImagePreview(serieData.imagenUrl || null);
+      setEditSerieImagePreview(serieData.imagen ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${serieData.imagen}` : null);
       setActiveTab('editar-serie');
     } catch (err: any) {
       console.error('Error al cargar serie:', err);
@@ -638,14 +638,14 @@ export default function Dashboard() {
   const handleEditEquipo = (equipo: any) => {
     setEditingEquipo(equipo);
     setEditEquipoForm({
-      nombre: equipo.nombre,
-      descripcion: equipo.descripcion || '',
-      estadio: equipo.estadio || '',
-      ciudad: equipo.ciudad || '',
-      serieId: equipo.serieId?.toString() || ''
+      name: equipo.name,
+      description: equipo.description || '',
+      stadium: equipo.stadium || '',
+      city: equipo.city || '',
+      seriesId: equipo.serieId?.toString() || ''
     });
     setEditEquipoImageFile(null);
-    setEditEquipoImagePreview(equipo.imagenUrl || null);
+    setEditEquipoImagePreview(equipo.imagen ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${equipo.imagen}` : null);
     setActiveTab('editar-equipo');
   };
 
@@ -665,8 +665,8 @@ export default function Dashboard() {
         // Agregar campos de texto
         Object.entries(editEquipoForm).forEach(([key, value]) => {
           if (value !== null && value !== '') {
-            if (key === 'serieId' && value) {
-              formData.append(key, parseInt(value).toString());
+            if (key === 'seriesId' && value) {
+              formData.append('seriesId', parseInt(value).toString());
             } else if (typeof value === 'string') {
               formData.append(key, value);
             }
@@ -676,7 +676,7 @@ export default function Dashboard() {
         // Agregar imagen
         formData.append('imagen', editEquipoImageFile);
 
-        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos/${editingEquipo.id}`, formData, {
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/teams/${editingEquipo.id}`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -685,16 +685,16 @@ export default function Dashboard() {
       } else {
         // Sin imagen, enviar JSON normal
         const updateData: any = {
-          nombre: editEquipoForm.nombre,
-          descripcion: editEquipoForm.descripcion || null,
-          estadio: editEquipoForm.estadio || null,
-          ciudad: editEquipoForm.ciudad || null,
-          serieId: editEquipoForm.serieId && editEquipoForm.serieId !== '' ? parseInt(editEquipoForm.serieId) : null
+          name: editEquipoForm.name,
+          description: editEquipoForm.description || null,
+          stadium: editEquipoForm.stadium || null,
+          city: editEquipoForm.city || null,
+          seriesId: editEquipoForm.seriesId && editEquipoForm.seriesId !== '' ? parseInt(editEquipoForm.seriesId) : null
         };
 
         console.log('Datos a enviar:', updateData); // Para debugging
 
-        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos/${editingEquipo.id}`, updateData, {
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/teams/${editingEquipo.id}`, updateData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -702,7 +702,7 @@ export default function Dashboard() {
       setSuccess('Equipo actualizado exitosamente');
       setActiveTab('modificar-equipos');
       setEditingEquipo(null);
-      setEditEquipoForm({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
+      setEditEquipoForm({ name: '', description: '', stadium: '', city: '', seriesId: '' });
       setEditEquipoImageFile(null);
       setEditEquipoImagePreview(null);
 
@@ -729,7 +729,7 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem('wfl_token');
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/equipos/${equipoId}`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/teams/${equipoId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -763,8 +763,8 @@ export default function Dashboard() {
 
     setEditingJugador(jugador);
     setEditJugadorForm({
-      nombre: jugador.nombre || '',
-      numeroCamiseta: jugador.numeroCamiseta?.toString() || '',
+      nombre: jugador.name || '',
+      numeroCamiseta: jugador.jerseyNumber?.toString() || '',
       posicion: jugador.posicion || '',
       fechaNacimiento: jugador.fechaNacimiento ? new Date(jugador.fechaNacimiento).toISOString().split('T')[0] : '',
       nacionalidad: jugador.nacionalidad || '',
@@ -778,7 +778,7 @@ export default function Dashboard() {
     });
     console.log('Equipo ID seteado en form:', jugador.equipoId?.toString() || '');
     setEditImageFile(null);
-    setEditImagePreview(jugador.imagenUrl || null);
+    setEditImagePreview(jugador.imagen ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${jugador.imagen}` : null);
     setActiveTab('editar-jugador');
   };
 
@@ -811,7 +811,7 @@ export default function Dashboard() {
         // Agregar imagen
         formData.append('imagen', editImageFile);
 
-        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jugadores/${editingJugador.id}`, formData, {
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/players/${editingJugador.id}`, formData, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'multipart/form-data'
@@ -827,7 +827,7 @@ export default function Dashboard() {
           equipoId: editJugadorForm.equipoId ? parseInt(editJugadorForm.equipoId) : undefined
         };
 
-        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jugadores/${editingJugador.id}`, updateData, {
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/players/${editingJugador.id}`, updateData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }
@@ -874,7 +874,7 @@ export default function Dashboard() {
 
     try {
       const token = localStorage.getItem('wfl_token');
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jugadores/${jugadorId}`, {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/players/${jugadorId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -1415,10 +1415,10 @@ export default function Dashboard() {
                            <div className="flex items-start gap-4 flex-1">
                              {/* Imagen de la serie */}
                              <div className="flex-shrink-0">
-                               {serie.imagenUrl ? (
+                               {serie.imagen ? (
                                  <img
-                                   src={serie.imagenUrl}
-                                   alt={serie.nombre}
+                                   src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${serie.imagen}`}
+                                   alt={serie.name}
                                    className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
                                  />
                                ) : (
@@ -1431,18 +1431,18 @@ export default function Dashboard() {
                              {/* Información de la serie */}
                              <div className="flex-1">
                                <h3 className="font-semibold text-lg" style={{ color: '#26558D' }}>
-                                 {serie.nombre}
+                                 {serie.name}
                                </h3>
                                <p className="text-sm text-gray-600 mb-2">
-                                 {serie.descripcion || 'Sin descripción'}
+                                 {serie.description || 'Sin descripción'}
                                </p>
                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-                                 <span>Estado: {serie.estado || 'No especificado'}</span>
-                                 <span>Temporada: {serie.temporada || 'No especificado'}</span>
-                                 <span>País: {serie.pais || 'No especificado'}</span>
+                                 <span>Estado: {serie.status || 'No especificado'}</span>
+                                 <span>Temporada: {serie.season || 'No especificado'}</span>
+                                 <span>País: {serie.country || 'No especificado'}</span>
                                  <span>Equipos: {serie.equipos?.length || 0}</span>
-                                 <span>Fecha Lanzamiento: {serie.fechaLanzamiento ? new Date(serie.fechaLanzamiento).toLocaleDateString() : 'No especificado'}</span>
-                                 <span>Creada: {new Date(serie.createAt).toLocaleDateString()}</span>
+                                 <span>Fecha Lanzamiento: {serie.launchDate ? new Date(serie.launchDate).toLocaleDateString() : 'No especificado'}</span>
+                                 <span>Creada: {new Date(serie.createdAt).toLocaleDateString()}</span>
                                </div>
                              </div>
                            </div>
@@ -1459,7 +1459,7 @@ export default function Dashboard() {
                              <button
                                className="px-3 py-1 rounded-lg font-medium text-white text-sm"
                                style={{ backgroundColor: '#F218FF' }}
-                               onClick={() => handleDeleteSerie(serie.id, serie.nombre)}
+                               onClick={() => handleDeleteSerie(serie.id, serie.name)}
                              >
                                Eliminar
                              </button>
@@ -1534,10 +1534,10 @@ export default function Dashboard() {
                            <div className="flex items-start gap-4 flex-1">
                              {/* Imagen del equipo */}
                              <div className="flex-shrink-0">
-                               {equipo.imagenUrl ? (
+                               {equipo.imagen ? (
                                  <img
-                                   src={equipo.imagenUrl}
-                                   alt={equipo.nombre}
+                                   src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${equipo.imagen}`}
+                                   alt={equipo.name}
                                    className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
                                  />
                                ) : (
@@ -1550,14 +1550,14 @@ export default function Dashboard() {
                              {/* Información del equipo */}
                              <div className="flex-1">
                                <h3 className="font-semibold text-lg" style={{ color: '#26558D' }}>
-                                 {equipo.nombre}
+                                 {equipo.name}
                                </h3>
                                <p className="text-sm text-gray-600 mb-2">
-                                 {equipo.descripcion || 'Sin descripción'}
+                                 {equipo.description || 'Sin descripción'}
                                </p>
                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
-                                 <span>Estadio: {equipo.estadio || 'No especificado'}</span>
-                                 <span>Ciudad: {equipo.ciudad || 'No especificado'}</span>
+                                 <span>Estadio: {equipo.stadium || 'No especificado'}</span>
+                                 <span>Ciudad: {equipo.city || 'No especificado'}</span>
                                  <span>Serie: {equipo.serie?.nombre || 'Sin serie'}</span>
                                  <span>Jugadores: {equipo.jugadores?.length || 0}</span>
                                </div>
@@ -1576,7 +1576,7 @@ export default function Dashboard() {
                              <button
                                className="px-3 py-1 rounded-lg font-medium text-white text-sm"
                                style={{ backgroundColor: '#F218FF' }}
-                               onClick={() => handleDeleteEquipo(equipo.id, equipo.nombre)}
+                               onClick={() => handleDeleteEquipo(equipo.id, equipo.name)}
                              >
                                Eliminar
                              </button>
@@ -1651,10 +1651,10 @@ export default function Dashboard() {
                            <div className="flex items-start gap-4 flex-1">
                              {/* Imagen del jugador */}
                              <div className="flex-shrink-0">
-                               {jugador.imagenUrl ? (
+                               {jugador.imagen ? (
                                  <img
-                                   src={jugador.imagenUrl}
-                                   alt={jugador.nombre}
+                                   src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${jugador.imagen}`}
+                                   alt={jugador.name}
                                    className="w-24 h-24 rounded-full object-cover border-2 border-gray-300"
                                  />
                                ) : (
@@ -1667,10 +1667,10 @@ export default function Dashboard() {
                              {/* Información del jugador */}
                              <div className="flex-1">
                                <h3 className="font-semibold text-lg" style={{ color: '#26558D' }}>
-                                 {jugador.nombre}
+                                 {jugador.name}
                                </h3>
                                <p className="text-sm text-gray-600 mb-2">
-                                 #{jugador.numeroCamiseta} • {jugador.posicion}
+                                 #{jugador.jerseyNumber} • {jugador.posicion}
                                </p>
                                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
                                  <span>Equipo: {jugador.equipo?.nombre || 'Sin equipo'}</span>
@@ -1694,7 +1694,7 @@ export default function Dashboard() {
                              <button
                                className="px-3 py-1 rounded-lg font-medium text-white text-sm"
                                style={{ backgroundColor: '#F218FF' }}
-                               onClick={() => handleDeleteJugador(jugador.id, jugador.nombre)}
+                               onClick={() => handleDeleteJugador(jugador.id, jugador.name)}
                              >
                                Eliminar
                              </button>
@@ -1924,7 +1924,7 @@ export default function Dashboard() {
                       </option>
                       {equipos.map((equipo) => (
                         <option key={equipo.id} value={equipo.id.toString()}>
-                          {equipo.nombre}
+                          {equipo.name}
                         </option>
                       ))}
                     </select>
@@ -2105,7 +2105,7 @@ export default function Dashboard() {
                   onClick={() => {
                     setActiveTab('modificar-equipos');
                     setEditingEquipo(null);
-                    setEditEquipoForm({ nombre: '', descripcion: '', estadio: '', ciudad: '', serieId: '' });
+                    setEditEquipoForm({ name: '', description: '', stadium: '', city: '', seriesId: '' });
                     setEditEquipoImageFile(null);
                     setEditEquipoImagePreview(null);
                   }}
@@ -2122,8 +2122,8 @@ export default function Dashboard() {
                   </label>
                   <input
                     type="text"
-                    value={editEquipoForm.nombre}
-                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, nombre: e.target.value })}
+                    value={editEquipoForm.name}
+                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -2134,8 +2134,8 @@ export default function Dashboard() {
                   </label>
                   <input
                     type="text"
-                    value={editEquipoForm.estadio}
-                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, estadio: e.target.value })}
+                    value={editEquipoForm.stadium}
+                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, stadium: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -2145,8 +2145,8 @@ export default function Dashboard() {
                   </label>
                   <input
                     type="text"
-                    value={editEquipoForm.ciudad}
-                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, ciudad: e.target.value })}
+                    value={editEquipoForm.city}
+                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, city: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -2155,14 +2155,14 @@ export default function Dashboard() {
                     Serie
                   </label>
                   <select
-                    value={editEquipoForm.serieId}
-                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, serieId: e.target.value })}
+                    value={editEquipoForm.seriesId}
+                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, seriesId: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Seleccionar serie (opcional)</option>
                     {series.map((serie) => (
                       <option key={serie.id} value={serie.id.toString()}>
-                        {serie.nombre}
+                        {serie.name}
                       </option>
                     ))}
                   </select>
@@ -2172,8 +2172,8 @@ export default function Dashboard() {
                     Descripción
                   </label>
                   <textarea
-                    value={editEquipoForm.descripcion}
-                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, descripcion: e.target.value })}
+                    value={editEquipoForm.description}
+                    onChange={(e) => setEditEquipoForm({ ...editEquipoForm, description: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
                   />
@@ -2334,8 +2334,8 @@ export default function Dashboard() {
                   </label>
                   <input
                     type="text"
-                    value={equipoForm.nombre}
-                    onChange={(e) => setEquipoForm({ ...equipoForm, nombre: e.target.value })}
+                    value={equipoForm.name}
+                    onChange={(e) => setEquipoForm({ ...equipoForm, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
@@ -2346,8 +2346,8 @@ export default function Dashboard() {
                   </label>
                   <input
                     type="text"
-                    value={equipoForm.estadio}
-                    onChange={(e) => setEquipoForm({ ...equipoForm, estadio: e.target.value })}
+                    value={equipoForm.stadium}
+                    onChange={(e) => setEquipoForm({ ...equipoForm, stadium: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -2357,8 +2357,8 @@ export default function Dashboard() {
                   </label>
                   <input
                     type="text"
-                    value={equipoForm.ciudad}
-                    onChange={(e) => setEquipoForm({ ...equipoForm, ciudad: e.target.value })}
+                    value={equipoForm.city}
+                    onChange={(e) => setEquipoForm({ ...equipoForm, city: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -2367,14 +2367,14 @@ export default function Dashboard() {
                     Serie
                   </label>
                   <select
-                    value={equipoForm.serieId}
-                    onChange={(e) => setEquipoForm({ ...equipoForm, serieId: e.target.value })}
+                    value={equipoForm.seriesId}
+                    onChange={(e) => setEquipoForm({ ...equipoForm, seriesId: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Seleccionar serie (opcional)</option>
                     {series.map((serie) => (
                       <option key={serie.id} value={serie.id.toString()}>
-                        {serie.nombre}
+                        {serie.name}
                       </option>
                     ))}
                   </select>
@@ -2384,8 +2384,8 @@ export default function Dashboard() {
                     Descripción
                   </label>
                   <textarea
-                    value={equipoForm.descripcion}
-                    onChange={(e) => setEquipoForm({ ...equipoForm, descripcion: e.target.value })}
+                    value={equipoForm.description}
+                    onChange={(e) => setEquipoForm({ ...equipoForm, description: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={3}
                   />
@@ -2587,7 +2587,7 @@ export default function Dashboard() {
                       <option value="">Seleccionar equipo</option>
                       {equipos.map((equipo) => (
                         <option key={equipo.id} value={equipo.id.toString()}>
-                          {equipo.nombre}
+                          {equipo.name}
                         </option>
                       ))}
                     </select>
